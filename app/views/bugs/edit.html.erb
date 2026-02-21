@@ -1,0 +1,9 @@
+<%# app/views/bugs/edit.html.erb %>
+<div class="max-w-3xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-black">Edit Bug</h1>
+    <p class="text-gray-600 mt-1">Project: <%= link_to @project.name, @project, class: "text-blue-600 hover:underline" %></p>
+  </div>
+
+  <%= render "form", project: @project, bug: @bug %>
+</div>

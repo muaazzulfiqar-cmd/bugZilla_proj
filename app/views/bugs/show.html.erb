@@ -1,0 +1,41 @@
+<div class="bg-white p-6 rounded-2xl shadow">
+  <h1 class="text-3xl font-bold mb-6 text-black">Bug Details</h1>
+
+  <div class="space-y-4 text-black">
+    <p class="text-black"><strong class="text-black">Title:</strong> <span class="text-black"><%= @bug.title %></span></p>
+    <p class="text-black"><strong class="text-black">Description:</strong> <span class="text-black"><%= @bug.description %></span></p>
+    <p class="text-black"><strong class="text-black">Status:</strong> 
+      <span class="<%= status_color_class(@bug.status) %>">
+        <%= @bug.status&.humanize %>
+      </span>
+    </p>
+    <p class="text-black"><strong class="text-black">Priority:</strong> 
+      <span class="<%= priority_color_class(@bug.priority) %>">
+        <%= @bug.priority&.humanize %>
+      </span>
+    </p>
+    <p class="text-black"><strong class="text-black">Reporter:</strong> <span class="text-black"><%= @bug.reporter&.email %></span></p>
+    <p class="text-black"><strong class="text-black">Assignee:</strong> <span class="text-black"><%= @bug.assignee&.email || "Unassigned" %></span></p>
+    <p class="text-black"><strong class="text-black">Project:</strong> <span class="text-black"><%= @bug.project.name %></span></p>
+
+    <% if @bug.screenshots.attached? %>
+      <div class="mt-4">
+        <p class="font-medium mb-2 text-black">Screenshots:</p>
+        <div class="grid grid-cols-2 gap-4">
+          <% @bug.screenshots.each do |shot| %>
+            <div>
+              <%= image_tag shot, class: "rounded-lg shadow w-full h-auto border border-gray-200" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="flex gap-4 mt-6">
+      <%= link_to "Edit", edit_project_bug_path(@project, @bug),
+          class: "bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors" %>
+      <%= link_to "Back to Project", @project,
+          class: "bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors" %>
+    </div>
+  </div>
+</div>

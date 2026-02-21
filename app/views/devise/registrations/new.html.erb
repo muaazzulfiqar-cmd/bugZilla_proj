@@ -1,0 +1,64 @@
+# app/views/devise/registrations/new.html.erb
+<h2 class="text-2xl font-bold mb-6">Sign up</h2>
+
+<%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "space-y-6" }) do |f| %>
+  <%= render "devise/shared/error_messages", resource: resource %>
+
+  <div class="space-y-4">
+    <div>
+      <%= f.label :email, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.email_field :email, autofocus: true, autocomplete: "email",
+          class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+    </div>
+
+    <div>
+      <%= f.label :password, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <% if @minimum_password_length %>
+        <em class="text-xs text-gray-500">(<%= @minimum_password_length %> characters minimum)</em>
+      <% end %>
+      <%= f.password_field :password, autocomplete: "new-password",
+          class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+    </div>
+
+    <div>
+      <%= f.label :password_confirmation, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.password_field :password_confirmation, autocomplete: "new-password",
+          class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+    </div>
+
+    <div>
+      <%= f.label :selected_role, "Select Your Role", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.select :selected_role, 
+          options_for_select([["Select a role", ""], "Manager", "Developer", "QA"]),
+          {}, 
+          class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500",
+          id: "role_select" %>
+    </div>
+
+    <div id="role_password_field" class="hidden">
+      <%= f.label :role_password, "Role Password", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <p class="text-xs text-gray-500 mb-2">Enter the special password for your selected role</p>
+      <%= f.password_field :role_password,
+          class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+    </div>
+  </div>
+
+  <div>
+    <%= f.submit "Sign up", 
+        class: "w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+  </div>
+<% end %>
+
+<%= render "devise/shared/links" %>
+
+<script>
+  // Show/hide role password field based on role selection
+  document.getElementById('role_select').addEventListener('change', function() {
+    const passwordField = document.getElementById('role_password_field');
+    if (this.value && this.value !== "") {
+      passwordField.classList.remove('hidden');
+    } else {
+      passwordField.classList.add('hidden');
+    }
+  });
+</script>
