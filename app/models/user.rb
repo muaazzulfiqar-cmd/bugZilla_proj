@@ -11,34 +11,48 @@ class User < ApplicationRecord
 
   has_many :created_projects, class_name: "Project", foreign_key: :creator_id
 
-  # Virtual attribute for role selection during signup
-  attr_accessor :selected_role
+  # Global role (system-wide permissions)
+  enum :global_role, { employee: 0, admin: 1 }
+
+  # Project-specific role (stored in memberships)
+  # This is NOT on the User model - it's in ProjectMembership
+
+  # Virtual attributes for signup
+  attr_accessor :selected_global_role
   attr_accessor :role_password
 
-  validate :validate_role_password, on: :create
+  validate :validate_global_role_password, on: :create
+
+  # Helper methods
+  def admin?
+    global_role == "admin"
+  end
+
+  def employee?
+    global_role == "employee"
+  end
 
   private
 
-  def validate_role_password
-    return if selected_role.blank?
+  def validate_global_role_password
+    return if selected_global_role.blank?
     
-    # Debug output - you can check your logs to see what's being received
-    Rails.logger.debug "Selected role: #{selected_role.inspect}"
-    Rails.logger.debug "Role password: #{role_password.inspect}"
-    
-    # Define special passwords for each role
+    # Special passwords for global roles
     special_passwords = {
-      "Manager" => "manager123",
-      "Developer" => "developer123",
-      "QA" => "qa123"
+      "employee" => "employee123",
+      "admin" => "admin123"
     }
 
-    expected_password = special_passwords[selected_role]
+    normalized_role = selected_global_role.to_s.downcase
+    expected_password = special_passwords[normalized_role]
     
     if expected_password.blank?
-      errors.add(:selected_role, "is invalid - received: #{selected_role}")
+      errors.add(:selected_global_role, "is invalid")
     elsif role_password != expected_password
-      errors.add(:role_password, "is incorrect for the selected role")
+      errors.add(:role_password, "is incorrect for the selected global role")
+    else
+      # Set the user's global role based on selection
+      self.global_role = normalized_role
     end
   end
 end

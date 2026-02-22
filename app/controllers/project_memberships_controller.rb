@@ -2,7 +2,7 @@
 class ProjectMembershipsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_project
-  before_action :authorize_manager!
+  before_action :authorize_management!
 
   def index
     @memberships = @project.project_memberships.includes(:user)
@@ -35,7 +35,7 @@ class ProjectMembershipsController < ApplicationController
     
     if @membership.user == current_user
       redirect_to project_project_memberships_path(@project), alert: "You cannot remove yourself from the project."
-    elsif @membership.user == @project.creator
+    elsif @membership.user == @project.creator && !current_user.admin?
       redirect_to project_project_memberships_path(@project), alert: "Cannot remove the project creator."
     else
       user_email = @membership.user.email
@@ -50,10 +50,14 @@ class ProjectMembershipsController < ApplicationController
     @project = Project.find(params[:project_id])
   end
 
-  def authorize_manager!
+  def authorize_management!
+    # Allow admins to manage any project's team
+    return if current_user.admin?
+    
+    # Otherwise, check if they're a manager in this project
     membership = @project.project_memberships.find_by(user: current_user)
     unless membership&.manager?
-      redirect_to @project, alert: "Only managers can manage team members."
+      redirect_to @project, alert: "Only managers and admins can manage team members."
     end
   end
 

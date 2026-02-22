@@ -1,5 +1,44 @@
 <h1 class="text-3xl font-bold mb-6 text-black">Dashboard</h1>
 
+<!-- Global Role Banner -->
+<div class="bg-gradient-to-r <%= @global_role == 'admin' ? 'from-purple-600 to-pink-600' : 'from-blue-600 to-green-600' %> text-white p-6 rounded-2xl shadow-lg mb-8">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div class="flex items-center gap-4">
+      <div class="bg-white/20 p-3 rounded-full">
+        <% if @global_role == 'admin' %>
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        <% else %>
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+        <% end %>
+      </div>
+      <div>
+        <p class="text-sm opacity-90">Logged in as</p>
+        <p class="text-xl font-bold"><%= current_user.email %></p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-4 bg-white/10 px-6 py-3 rounded-xl">
+      <div class="text-right">
+        <p class="text-sm opacity-90">Account Type</p>
+        <p class="text-3xl font-bold uppercase"><%= @global_role %></p>
+      </div>
+      <div class="border-l border-white/30 pl-4">
+        <% if @global_role == 'admin' %>
+          <p class="text-sm font-semibold">System Administrator</p>
+          <p class="text-xs opacity-90">Full access to all projects</p>
+        <% else %>
+          <p class="text-sm font-semibold">Team Member</p>
+          <p class="text-xs opacity-90">Access to assigned projects only</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
   <!-- Projects Card -->

@@ -5,6 +5,6 @@ class Users::RegistrationsController < Devise::RegistrationsController
   protected
 
   def configure_sign_up_params
-    devise_parameter_sanitizer.permit(:sign_up, keys: [:selected_role, :role_password])
+    devise_parameter_sanitizer.permit(:sign_up, keys: [:selected_global_role, :role_password])
   end
 end

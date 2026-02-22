@@ -3,7 +3,8 @@ class ProjectsController < ApplicationController
   before_action :set_project, only: %i[show edit update destroy]
 
   def index
-    @projects = current_user.projects
+    @my_projects = current_user.projects.includes(:project_memberships)
+    @all_projects = Project.all.includes(:creator)
     authorize Project
   end
 
