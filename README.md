@@ -2,7 +2,7 @@
 
 ## 📋 Overview
 
-Bugzilla is a comprehensive bug tracking and management system built with Ruby on Rails. It enables software teams to report, assign, and monitor bugs across multiple projects with role-based access control.
+Bugzilla is a comprehensive bug tracking and management system built with Ruby on Rails. It enables software teams to report, assign, and monitor bugs across multiple projects with role-based access control. Random Message.
 
 ## ✨ Features
 
