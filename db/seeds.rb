@@ -9,74 +9,133 @@ User.destroy_all
 
 puts "👥 Creating users..."
 
-# Create 15 users with different roles
-roles = [:manager, :developer, :qa]
+# Create 30 users with different global roles
 users = []
 
-15.times do |i|
-  role = roles.sample
+# Create 5 admins
+5.times do |i|
   user = User.create!(
-    email: "user#{i+1}@example.com",
+    email: "admin#{i+1}@example.com",
     password: "password123",
-    password_confirmation: "password123"
+    password_confirmation: "password123",
+    global_role: :admin
   )
-  users << { user: user, role: role }
-  puts "  Created #{user.email} as #{role}"
+  users << { user: user, role: nil }  # role nil because global role is admin
+  puts "  Created admin: admin#{i+1}@example.com"
 end
 
-# Create 3 managers specifically for project creation
-managers = users.select { |u| u[:role] == :manager }.map { |u| u[:user] }
-if managers.empty?
-  # Ensure at least 2 managers exist
-  2.times do |i|
-    user = User.create!(
-      email: "manager#{i+1}@example.com",
-      password: "password123",
-      password_confirmation: "password123"
-    )
-    users << { user: user, role: :manager }
-    managers << user
-    puts "  Created #{user.email} as manager"
-  end
+# Create 25 employees
+25.times do |i|
+  user = User.create!(
+    email: "employee#{i+1}@example.com",
+    password: "password123",
+    password_confirmation: "password123",
+    global_role: :employee
+  )
+  users << { user: user, role: nil }
+  puts "  Created employee: employee#{i+1}@example.com"
 end
 
-puts "📊 Creating 20 projects..."
+puts "📊 Creating 100 projects..."
 
-# Project names and descriptions for variety
-project_names = [
-  "E-commerce Platform", "Mobile Banking App", "Inventory Management System",
-  "Customer Relationship Manager", "Healthcare Portal", "Learning Management System",
-  "Food Delivery App", "Hotel Booking System", "Fitness Tracker App",
-  "Real Estate Marketplace", "Ticket Management System", "Chat Application",
-  "Video Streaming Service", "Payment Gateway Integration", "Analytics Dashboard",
-  "Social Media Scheduler", "Email Marketing Tool", "Document Management System",
-  "HR Management System", "Project Management Tool"
+# Project names and descriptions arrays
+project_prefixes = [
+  "E-commerce", "Mobile", "Web", "Desktop", "API", "Cloud", "Enterprise",
+  "Social", "Analytics", "Dashboard", "CRM", "ERP", "CMS", "LMS", "POS",
+  "Inventory", "HRMS", "Payment", "Booking", "Delivery", "Chat", "Video",
+  "Music", "Gaming", "Fitness", "Health", "Education", "Finance", "Banking",
+  "Insurance", "Real Estate", "Travel", "Food", "Fashion", "Sports"
+]
+
+project_suffixes = [
+  "Platform", "System", "App", "Service", "Suite", "Manager", "Tracker",
+  "Hub", "Network", "Portal", "Solution", "Toolkit", "Engine", "Core",
+  "Interface", "Gateway", "Connector", "Monitor", "Analyzer", "Optimizer"
+]
+
+project_adjectives = [
+  "Smart", "Intelligent", "Advanced", "Modern", "Fast", "Secure", "Scalable",
+  "Robust", "Dynamic", "Flexible", "Integrated", "Automated", "Real-time",
+  "Cloud-based", "Mobile-first", "User-friendly", "High-performance"
 ]
 
 project_descriptions = [
-  "Online shopping platform with payment integration",
-  "Secure mobile banking application for iOS and Android",
-  "Track inventory across multiple warehouses",
-  "Manage customer interactions and sales pipeline",
-  "Patient records and appointment scheduling system",
-  "Online course platform with video hosting",
-  "Food ordering and delivery tracking application",
-  "Hotel room booking and management system",
-  "Track workouts, nutrition, and fitness goals",
-  "Property listing and agent management platform",
-  "Customer support ticket system with SLA tracking",
-  "Real-time messaging with file sharing",
-  "Video on demand platform with subscription",
-  "Process payments with multiple providers",
-  "Business intelligence and data visualization",
-  "Schedule and manage social media posts",
-  "Create and track email campaigns",
-  "Store, organize, and share documents",
-  "Employee records, payroll, and leave management",
-  "Task tracking, timelines, and team collaboration"
+  "A comprehensive solution for modern businesses",
+  "Streamline operations and boost productivity",
+  "Enterprise-grade platform with advanced features",
+  "Next-generation system built for scale",
+  "Innovative approach to traditional workflows",
+  "Cutting-edge technology stack implementation",
+  "Full-stack application with microservices architecture",
+  "Real-time data processing and visualization",
+  "Multi-tenant SaaS platform with API-first design",
+  "Legacy system modernization project"
 ]
 
-# Bug titles and descriptions for variety
+projects = []
+100.times do |i|
+  # Generate random project name
+  name = [
+    project_prefixes.sample,
+    project_suffixes.sample
+  ].join(' ')
+  
+  # Add adjective sometimes (30% chance)
+  if rand < 0.3
+    name = "#{project_adjectives.sample} #{name}"
+  end
+  
+  # Add number sometimes (20% chance)
+  if rand < 0.2
+    name = "#{name} #{rand(1000..9999)}"
+  end
+  
+  # Randomly select a creator from admins (80% chance) or employees (20% chance)
+  creator_pool = rand < 0.8 ? users.select { |u| u[:user].admin? } : users
+  creator = creator_pool.sample[:user]
+  
+  project = Project.create!(
+    name: name,
+    description: "#{project_descriptions.sample} for #{['businesses', 'enterprises', 'startups', 'teams', 'organizations'].sample}.",
+    creator: creator
+  )
+  projects << project
+  
+  # Add creator as manager (unless they're admin - admins don't need project role)
+  unless creator.admin?
+    ProjectMembership.create!(
+      user: creator,
+      project: project,
+      role: :manager
+    )
+  end
+  
+  # Add 5-15 random members to each project
+  num_members = rand(5..15)
+  available_users = users.reject { |u| u[:user] == creator }.sample(num_members)
+  
+  available_users.each do |user_data|
+    # Assign random project role (manager, developer, qa)
+    # But ensure at least one manager per project (if creator is admin)
+    role = if creator.admin? && !ProjectMembership.exists?(project: project, role: :manager)
+      :manager
+    else
+      [:manager, :developer, :qa].sample
+    end
+    
+    ProjectMembership.create!(
+      user: user_data[:user],
+      project: project,
+      role: role
+    )
+  end
+  
+  puts "  Created project #{i+1}/100: '#{name}'"
+end
+
+puts "🐛 Creating 20 bugs for each project (2000 total bugs)..."
+
+# Bug data arrays
 bug_titles = [
   "Login fails with special characters", "Page loads slowly on mobile",
   "API returns 500 error intermittently", "UI breaks on small screens",
@@ -92,7 +151,17 @@ bug_titles = [
   "File upload size limit too low", "Search filters not working",
   "Progress bar not updating", "Confirmation email missing link",
   "Dark mode colors not correct", "Font sizes inconsistent",
-  "Dropdown menu cuts off text", "Keyboard navigation broken"
+  "Dropdown menu cuts off text", "Keyboard navigation broken",
+  "Database connection timeout", "Cache invalidation issues",
+  "Webhook delivery failing", "SSL certificate expired",
+  "CSV import corrupted", "PDF generation fails",
+  "Two-factor authentication broken", "Social login not working",
+  "Profile picture upload fails", "Notification count incorrect",
+  "Calendar integration broken", "Export to Excel formatting wrong",
+  "Drag and drop not working", "Infinite scroll duplicates",
+  "Modal dialog not closing", "Form validation too strict",
+  "Password strength meter wrong", "Remember me not working",
+  "Account lockout too quick", "Email template broken"
 ]
 
 bug_descriptions = [
@@ -125,69 +194,50 @@ bug_descriptions = [
   "Dark mode makes text unreadable in some sections",
   "Font sizes vary across different pages inconsistently",
   "Long dropdown items are cut off without scrollbar",
-  "Cannot navigate form with Tab key, focus gets stuck"
+  "Cannot navigate form with Tab key, focus gets stuck",
+  "Database connections not being released properly",
+  "Cache not invalidating after data updates",
+  "Webhook deliveries timing out after 3 attempts",
+  "SSL certificate not auto-renewing",
+  "CSV import fails on rows with special characters",
+  "PDF generation memory usage too high",
+  "2FA codes not being accepted",
+  "OAuth callback URL not working",
+  "Image upload orientation incorrect",
+  "Notification badge shows wrong count",
+  "Calendar sync not updating events",
+  "Excel export dates format incorrectly",
+  "Drag drop reorder not saving",
+  "Scroll loading shows same items",
+  "Modal can't be closed with ESC",
+  "Form accepts invalid email formats",
+  "Password meter says weak for strong passwords",
+  "Remember me cookie expires too soon",
+  "Account locks after 2 failed attempts",
+  "Email template images not loading"
 ]
-
-puts "🏗️ Creating projects and assigning members..."
-
-projects = []
-project_names.each_with_index do |name, index|
-  # Randomly select a manager as creator
-  creator = managers.sample
-  
-  project = Project.create!(
-    name: name,
-    description: project_descriptions[index],
-    creator: creator
-  )
-  projects << project
-  
-  # Add creator as manager
-  ProjectMembership.create!(
-    user: creator,
-    project: project,
-    role: :manager
-  )
-  
-  # Add 4-8 random members to each project
-  num_members = rand(4..8)
-  available_users = users.reject { |u| u[:user] == creator }.sample(num_members)
-  
-  available_users.each do |user_data|
-    ProjectMembership.create!(
-      user: user_data[:user],
-      project: project,
-      role: user_data[:role]
-    )
-  end
-  
-  puts "  Created '#{name}' with #{available_users.count + 1} members"
-end
-
-puts "🐛 Creating 5 bugs for each project (100 total)..."
 
 statuses = [:open, :in_progress, :resolved, :closed]
 priorities = [:low, :medium, :high]
 
 projects.each_with_index do |project, p_index|
-  5.times do |b_index|
-    # Get all project members
-    members = project.users.to_a
-    next if members.empty?
+  # Get all project members for this project
+  members = project.users.to_a
+  next if members.empty?
+  
+  20.times do |b_index|
+    # Find reporters (any member can report)
+    reporter = members.sample
     
-    # Randomly select reporter (usually QA or Manager)
-    reporters = members.select { |u| 
-      membership = ProjectMembership.find_by(user: u, project: project)
-      membership&.qa? || membership&.manager?
-    }
-    reporters = members if reporters.empty? # Fallback to any member
-    
-    # Randomly select assignee (usually Developer, sometimes others)
-    assignees = members.select { |u|
+    # Find assignees (usually developers, sometimes others)
+    assignee_pool = members.select { |u| 
       membership = ProjectMembership.find_by(user: u, project: project)
       membership&.developer? || membership&.manager?
     }
-    assignees = members if assignees.empty? # Fallback to any member
+    assignee_pool = members if assignee_pool.empty?
+    
+    # Determine assignee (70% chance assigned, 30% unassigned)
+    assignee = rand < 0.7 ? assignee_pool.sample : nil
     
     # Determine status based on realistic distribution
     status = case rand(10)
@@ -204,28 +254,44 @@ projects.each_with_index do |project, p_index|
     else :low               # 10% low
     end
     
+    # Randomly select title and description
+    title = bug_titles.sample
+    # Add some variety by sometimes prefixing with project context
+    if rand < 0.3
+      title = "[#{project.name.split.first}] #{title}"
+    end
+    
     bug = Bug.create!(
-      title: bug_titles.sample,
+      title: title,
       description: bug_descriptions.sample,
       status: status,
       priority: priority,
-      reporter: reporters.sample,
-      assignee: assignees.sample,
+      reporter: reporter,
+      assignee: assignee,
       project: project
     )
     
-    puts "    Created bug #{b_index + 1} for '#{project.name}': #{bug.title[0..30]}..."
+    # Randomly add screenshots to some bugs (20% chance)
+    if rand < 0.2
+      # This is a placeholder - in real seeds you might attach actual files
+      # bug.screenshots.attach(io: File.open(Rails.root.join('test/fixtures/files/screenshot.png')), filename: 'screenshot.png')
+      puts "    📸 Bug #{b_index+1} has screenshots (simulated)"
+    end
   end
+  
+  puts "  ✅ Added 20 bugs to '#{project.name}' (Project #{p_index+1}/100)"
 end
 
-puts "\n" + "=" * 60
+puts "\n" + "=" * 70
 puts "✅ SEED COMPLETED SUCCESSFULLY!"
-puts "=" * 60
+puts "=" * 70
 puts "\n📊 STATISTICS:"
-puts "   Users: #{User.count}"
-puts "   Projects: #{Project.count}"
+puts "   Admins: #{User.where(global_role: :admin).count}"
+puts "   Employees: #{User.where(global_role: :employee).count}"
+puts "   Total Users: #{User.count}"
+puts "   Total Projects: #{Project.count}"
 puts "   Project Memberships: #{ProjectMembership.count}"
-puts "   Bugs: #{Bug.count}"
+puts "   Total Bugs: #{Bug.count}"
 puts "\n📈 BUG BREAKDOWN:"
 puts "   Open: #{Bug.open.count}"
 puts "   In Progress: #{Bug.in_progress.count}"
@@ -235,10 +301,13 @@ puts "\n🎯 PRIORITY BREAKDOWN:"
 puts "   High: #{Bug.where(priority: :high).count}"
 puts "   Medium: #{Bug.where(priority: :medium).count}"
 puts "   Low: #{Bug.where(priority: :low).count}"
-puts "\n" + "=" * 60
-puts "\n🔑 SAMPLE LOGIN CREDENTIALS:"
-puts "   Any user: userX@example.com / password123 (where X is 1-15)"
-puts "   Example: user1@example.com / password123"
-puts "\n👥 ROLES ARE ASSIGNED PER PROJECT"
+puts "\n👥 ASSIGNMENT BREAKDOWN:"
+puts "   Assigned: #{Bug.where.not(assignee_id: nil).count}"
+puts "   Unassigned: #{Bug.where(assignee_id: nil).count}"
+puts "\n" + "=" * 70
+puts "\n🔑 LOGIN CREDENTIALS:"
+puts "   Admins: admin1@example.com ... admin5@example.com / password123"
+puts "   Employees: employee1@example.com ... employee25@example.com / password123"
+puts "\n📝 PROJECT ROLES ARE ASSIGNED PER PROJECT"
 puts "   Check your role in each project by visiting the project page"
-puts "=" * 60
+puts "=" * 70

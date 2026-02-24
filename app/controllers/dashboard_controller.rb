@@ -10,7 +10,6 @@ class DashboardController < ApplicationController
     @open_count = Bug.open.count
     @resolved_count = Bug.resolved.count
     
-    # Get the user's global role (admin/employee)
     @global_role = current_user.global_role
   end
 end

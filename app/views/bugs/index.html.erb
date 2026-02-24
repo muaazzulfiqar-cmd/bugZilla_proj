@@ -1,4 +1,3 @@
-<%# app/views/bugs/index.html.erb %>
 <div class="mb-6">
   <h1 class="text-3xl font-bold text-black">Bugs for <%= @project.name %></h1>
   <p class="text-gray-600 mt-1"><%= link_to "Back to Project", @project, class: "text-blue-600 hover:underline" %></p>
@@ -64,6 +63,9 @@
         <% end %>
       </tbody>
     </table>
+  </div>
+  <div class="mt-8 flex justify-center">
+    <%= paginate @bugs %>
   </div>
 <% else %>
   <div class="text-center py-12 bg-white rounded-2xl shadow border border-gray-100">

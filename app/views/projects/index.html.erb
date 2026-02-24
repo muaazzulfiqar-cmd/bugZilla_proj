@@ -1,5 +1,5 @@
 <div class="flex justify-between items-center mb-6">
-  <h1 class="text-3xl font-bold text-black">Projects</h1>
+  <h1 class="text-3xl font-bold text-white">Projects</h1>
   <%= link_to "New Project", new_project_path,
     class: "bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors" %>
 </div>
@@ -7,7 +7,7 @@
 <!-- My Projects Section -->
 <% if @my_projects.any? %>
   <div class="mb-10">
-    <h2 class="text-2xl font-semibold text-black mb-4 flex items-center">
+    <h2 class="text-2xl font-semibold text-white mb-4 flex items-center">
       <span>My Projects</span>
       <span class="ml-3 text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
         <%= @my_projects.count %>
@@ -59,7 +59,7 @@
 
 <!-- All Projects Section -->
 <div class="mb-6">
-  <h2 class="text-2xl font-semibold text-black mb-4 flex items-center">
+  <h2 class="text-2xl font-semibold text-white mb-4 flex items-center">
     <span>All Projects</span>
     <span class="ml-3 text-sm bg-gray-200 text-gray-800 px-3 py-1 rounded-full">
       <%= @all_projects.count %> total
@@ -78,9 +78,9 @@
         <p class="text-gray-700 mb-3 text-sm"><%= project.description.truncate(80) %></p>
         
         <div class="flex items-center justify-between text-xs">
-          <span class="text-gray-600">
-            By: <%= project.creator.email.split('@').first %>
-          </span>
+        <span class="text-gray-600">
+          By: <%= project.creator&.email&.split('@')&.first || "Deleted User" %>
+        </span>
           
           <div class="flex items-center gap-2">
             <% if membership %>
@@ -105,7 +105,9 @@
     <% end %>
   </div>
 </div>
-
+<div class="mt-8 flex justify-center">
+    <%= paginate @all_projects %>
+</div>
 <% if @all_projects.empty? %>
   <div class="text-center py-12 bg-white rounded-2xl shadow">
     <p class="text-gray-700 mb-4">No projects exist yet.</p>

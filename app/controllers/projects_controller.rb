@@ -4,7 +4,7 @@ class ProjectsController < ApplicationController
 
   def index
     @my_projects = current_user.projects.includes(:project_memberships)
-    @all_projects = Project.all.includes(:creator)
+    @all_projects = Project.all.includes(:creator).page(params[:page]).per(20)
     authorize Project
   end
 
@@ -27,6 +27,7 @@ class ProjectsController < ApplicationController
         user: current_user,
         role: :manager
       )
+      
       redirect_to @project, notice: "Project created successfully."
     else
       render :new, status: :unprocessable_entity

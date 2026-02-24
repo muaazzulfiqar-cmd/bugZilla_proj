@@ -1,4 +1,3 @@
-# app/controllers/project_memberships_controller.rb
 class ProjectMembershipsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_project
@@ -51,10 +50,7 @@ class ProjectMembershipsController < ApplicationController
   end
 
   def authorize_management!
-    # Allow admins to manage any project's team
     return if current_user.admin?
-    
-    # Otherwise, check if they're a manager in this project
     membership = @project.project_memberships.find_by(user: current_user)
     unless membership&.manager?
       redirect_to @project, alert: "Only managers and admins can manage team members."

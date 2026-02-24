@@ -6,7 +6,7 @@ class Users::SessionsController < Devise::SessionsController
 
   def send_login_notification
     if current_user
-      UserMailer.login_notification(current_user, request.remote_ip).deliver_later
+      UserMailer.login_notification(current_user, request.remote_ip).deliver_now
     end
   end
 end

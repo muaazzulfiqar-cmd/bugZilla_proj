@@ -1,4 +1,3 @@
-# app/mailers/bug_mailer.rb
 class BugMailer < ApplicationMailer
   default from: 'bugs@bugzilla.com'
 

@@ -1,4 +1,3 @@
-# app/controllers/bugs_controller.rb
 class BugsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_project
@@ -7,7 +6,7 @@ class BugsController < ApplicationController
   rescue_from Pundit::NotAuthorizedError, with: :bug_not_authorized
 
   def index
-    @bugs = @project.bugs.includes(:reporter, :assignee)
+    @bugs = @project.bugs.includes(:reporter, :assignee).page(params[:page]).per(10)
     authorize Bug
   end
 
@@ -27,7 +26,7 @@ class BugsController < ApplicationController
 
     if @bug.save
       if @bug.assignee.present?
-        BugMailer.bug_assigned(@bug, @bug.assignee).deliver_later
+        BugMailer.bug_assigned(@bug, @bug.assignee).deliver_now
         flash[:notice] = "Bug was successfully created and assigned to #{@bug.assignee.email}."
       else
         flash[:notice] = 'Bug was successfully created.'
@@ -45,25 +44,21 @@ class BugsController < ApplicationController
   def update
     authorize @bug
     
-    # Track changes for notifications
     old_assignee = @bug.assignee
     old_status = @bug.status
     old_priority = @bug.priority
     
     if @bug.update(bug_params)
-      # Send email if assignee changed
       if @bug.assignee.present? && old_assignee != @bug.assignee
-        BugMailer.bug_assigned(@bug, @bug.assignee).deliver_later
+        BugMailer.bug_assigned(@bug, @bug.assignee).deliver_now
         flash[:notice] = "Bug updated and reassigned to #{@bug.assignee.email}."
       
-      # Send email if unassigned
       elsif old_assignee.present? && @bug.assignee.nil?
-        BugMailer.bug_unassigned(@bug, old_assignee).deliver_later
+        BugMailer.bug_unassigned(@bug, old_assignee).deliver_now
         flash[:notice] = "Bug updated and unassigned from #{old_assignee.email}."
       
-      # Send email if status changed
       elsif old_status != @bug.status
-        BugMailer.bug_status_changed(@bug, old_status, @bug.status).deliver_later
+        BugMailer.bug_status_changed(@bug, old_status, @bug.status).deliver_now
         flash[:notice] = "Bug status updated from #{old_status.humanize} to #{@bug.status.humanize}."
       
       else
@@ -79,9 +74,8 @@ class BugsController < ApplicationController
   def destroy
     authorize @bug
     
-    # Notify assignee that bug was deleted
     if @bug.assignee.present?
-      BugMailer.bug_deleted(@bug, @bug.assignee).deliver_later
+      BugMailer.bug_deleted(@bug, @bug.assignee).deliver_now
     end
     
     @bug.destroy

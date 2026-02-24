@@ -1,4 +1,3 @@
-# app/policies/bug_policy.rb
 class BugPolicy < ApplicationPolicy
   def index?
     user.present?

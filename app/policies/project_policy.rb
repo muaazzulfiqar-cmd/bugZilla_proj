@@ -1,4 +1,3 @@
-# app/policies/project_policy.rb
 class ProjectPolicy < ApplicationPolicy
   def index?
     true
@@ -21,10 +20,8 @@ class ProjectPolicy < ApplicationPolicy
   end
 
   def update?
-    # Admin can edit ANY project
     return true if user.admin?
     
-    # Otherwise, normal rules apply
     user.present? && (
       record.creator_id == user.id || 
       user.project_memberships.find_by(project: record)&.manager?
@@ -32,10 +29,8 @@ class ProjectPolicy < ApplicationPolicy
   end
 
   def destroy?
-    # Admin can delete ANY project
     return true if user.admin?
     
-    # Otherwise, only creator can delete
     user.present? && record.creator_id == user.id
   end
 
