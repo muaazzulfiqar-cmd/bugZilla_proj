@@ -8,7 +8,7 @@
       class: "bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors" %>
 
   <%= link_to "Delete", @project,
-      data: { turbo_method: :delete, turbo_confirm: "Are you sure?" },
+      data: { turbo_method: :delete},
       class: "bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors" %>
 
   <%= link_to "Report Bug", new_project_bug_path(@project),
