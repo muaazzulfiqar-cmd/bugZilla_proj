@@ -1,63 +1,80 @@
-<h2 class="text-2xl font-bold mb-6">Sign up</h2>
+<div class="max-w-md mx-auto mt-10">
+  <div class="bg-white p-8 rounded-lg shadow-md">
+    
+    <h2 class="text-2xl font-bold mb-6 text-center text-black">Create an account</h2>
 
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "space-y-6" }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), 
+                 data: { turbo: false }) do |f| %>
+      
+      <%= render "devise/shared/error_messages", resource: resource %>
 
-  <div class="space-y-4">
-    <div>
-      <%= f.label :email, class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.email_field :email, autofocus: true, autocomplete: "email",
-          class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" %>
-    </div>
+      <!-- Email -->
+      <div class="mb-4">
+        <%= f.label :email, class: "block text-sm font-medium mb-1 text-black" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email",
+            class: "w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white",
+            placeholder: "your@email.com" %>
+      </div>
 
-    <div>
-      <%= f.label :password, class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <% if @minimum_password_length %>
-        <em class="text-xs text-gray-500">(<%= @minimum_password_length %> characters minimum)</em>
-      <% end %>
-      <%= f.password_field :password, autocomplete: "new-password",
-          class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" %>
-    </div>
+      <!-- Password -->
+      <div class="mb-4">
+        <%= f.label :password, class: "block text-sm font-medium mb-1 text-black" %>
+        <% if @minimum_password_length %>
+          <span class="text-xs text-gray-500">(<%= @minimum_password_length %> characters min)</span>
+        <% end %>
+        <%= f.password_field :password, autocomplete: "new-password",
+            class: "w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white",
+            placeholder: "••••••••" %>
+      </div>
 
-    <div>
-      <%= f.label :password_confirmation, class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.password_field :password_confirmation, autocomplete: "new-password",
-          class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" %>
-    </div>
+      <!-- Password Confirmation -->
+      <div class="mb-4">
+        <%= f.label :password_confirmation, class: "block text-sm font-medium mb-1 text-black" %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password",
+            class: "w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white",
+            placeholder: "••••••••" %>
+      </div>
 
-    <div>
-      <%= f.label :selected_global_role, "Select Your Account Type", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.select :selected_global_role, 
-          options_for_select([
-            ["Select account type", ""], 
-            ["Admin", "admin"], 
-            ["Employee", "employee"]
-          ], params.dig(:user, :selected_global_role)),
-          {}, 
-          class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500",
-          id: "global_role_select",
-          data: { role_password_target: "select" } %>
-      <p class="text-xs text-gray-500 mt-1">Admin: Can manage all projects. Employee: Standard user with project-specific roles.</p>
-    </div>
+      <!-- Account Type Selection -->
+      <div class="mb-4">
+        <%= f.label :selected_global_role, "Account type", class: "block text-sm font-medium mb-1 text-black" %>
+        <%= f.select :selected_global_role, 
+            options_for_select([
+              ["Select type", ""], 
+              ["Admin", "admin"], 
+              ["Employee", "employee"]
+            ], params.dig(:user, :selected_global_role)),
+            {}, 
+            class: "w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white",
+            id: "global_role_select" %>
+        <p class="text-xs text-gray-500 mt-1">Admin: Full system access | Employee: Project-based access</p>
+      </div>
 
-    <div id="role_password_container" class="<%= params.dig(:user, :selected_global_role).present?%>">
-      <%= f.label :role_password, "Account Type Password", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <p class="text-xs text-gray-500 mb-2">Enter the special password for your selected account type</p>
-      <%= f.password_field :role_password,
-          class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500",
-          value: params.dig(:user, :role_password) %>
+      <!-- Role Password (hidden by default) -->
+      <div id="role_password_container" class="mb-4">
+        <%= f.label :role_password, "Role password", class: "block text-sm font-medium mb-1 text-black" %>
+        <%= f.password_field :role_password,
+            class: "w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white",
+            placeholder: "Enter special password for this role",
+            value: params.dig(:user, :role_password) %>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="mb-4">
+        <%= f.submit "Sign up", 
+            class: "w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 cursor-pointer font-medium" %>
+      </div>
+    <% end %>
+
+    <!-- Links -->
+    <div class="text-center text-sm">
+      <%= link_to "Already have an account? Log in", new_session_path(resource_name), 
+          class: "text-blue-600 hover:underline" %>
     </div>
   </div>
+</div>
 
-  <div>
-    <%= f.submit "Sign up", 
-        class: "w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
-  </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
-
-<!-- Add this JavaScript at the bottom of the file -->
+<!-- JavaScript for toggling role password field -->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const roleSelect = document.getElementById('global_role_select');
@@ -72,18 +89,12 @@
         }
       }
       
-      // Initial check
       togglePasswordField();
-      
-      // Listen for changes
       roleSelect.addEventListener('change', togglePasswordField);
     }
   });
 </script>
 
-<!-- Add this CSS to ensure hidden class works -->
 <style>
-  .hidden {
-    display: none !important;
-  }
+  .hidden { display: none !important; }
 </style>
