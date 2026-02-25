@@ -1,0 +1,143 @@
+<div class="mb-6">
+  <h1 class="text-3xl font-bold text-black"><%= @project.name %></h1>
+  <p class="text-gray-700 mt-2"><%= @project.description.presence || "No description provided" %></p>
+</div>
+
+<div class="flex gap-4 mb-6 flex-wrap">
+  <%= link_to "Edit", edit_project_path(@project),
+      class: "bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors" %>
+
+  <%= link_to "Delete", @project,
+      data: { turbo_method: :delete},
+      class: "bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors" %>
+
+  <%= link_to "Report Bug", new_project_bug_path(@project),
+      class: "bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors" %>
+
+  <!-- New button to view all bugs -->
+  <%= link_to "View All Bugs", project_bugs_path(@project),
+      class: "bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors" %>
+
+  <% if current_user.admin? || @project.project_memberships.find_by(user: current_user)&.manager? %>
+    <%= link_to "Manage Team", project_project_memberships_path(@project),
+        class: "bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors" %>
+  <% end %>
+</div>
+
+<!-- Team Members Section -->
+<div class="bg-white p-6 rounded-2xl shadow mb-8">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-semibold text-black">Team Members (<%= @project.users.count %>)</h2>
+    <% if current_user.admin? || @project.project_memberships.find_by(user: current_user)&.manager? %>
+      <%= link_to "Manage Team", project_project_memberships_path(@project),
+          class: "text-blue-600 hover:underline text-sm" %>
+    <% end %>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <% @project.project_memberships.includes(:user).each do |membership| %>
+      <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+          <%= membership.user.email[0].upcase %>
+        </div>
+        <div class="flex-1">
+          <p class="font-medium text-black text-sm truncate" title="<%= membership.user.email %>">
+            <%= membership.user.email %>
+          </p>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="px-2 py-0.5 text-xs rounded-full 
+              <%= case membership.role
+                  when 'manager' then 'bg-green-100 text-green-800'
+                  when 'developer' then 'bg-blue-100 text-blue-800'
+                  when 'qa' then 'bg-orange-100 text-orange-800'
+                  end %>">
+              <%= membership.role.humanize %>
+            </span>
+            <% if membership.user == @project.creator %>
+              <span class="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">Creator</span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Bugs Section with link to view all -->
+<div class="mb-6">
+  <div class="flex justify-between items-center">
+    <h2 class="text-2xl font-semibold text-black">Recent Bugs</h2>
+    <%= link_to "View All Bugs →", project_bugs_path(@project), 
+        class: "text-blue-600 hover:underline text-sm" %>
+  </div>
+  <p class="text-sm text-gray-500 mb-4">Showing latest 5 bugs</p>
+</div>
+
+<% if @bugs.any? %>
+  <div class="space-y-4">
+    <% @bugs.limit(5).each do |bug| %>
+      <div class="bg-white p-4 rounded-xl shadow hover:shadow-md transition-shadow border border-gray-100">
+        <div class="flex justify-between items-center">
+          <div class="flex-1">
+            <%= link_to bug.title, [@project, bug],
+                class: "font-semibold text-lg text-black hover:text-blue-600 hover:underline" %>
+            
+            <div class="flex gap-3 mt-1 text-sm text-gray-600">
+              <span>Priority: 
+                <span class="<%= 
+                  case bug.priority
+                  when 'high' then 'text-red-600 font-medium'
+                  when 'medium' then 'text-yellow-600 font-medium'
+                  when 'low' then 'text-green-600 font-medium'
+                  else 'text-gray-700'
+                  end %>">
+                  <%= bug.priority&.humanize || "Not set" %>
+                </span>
+              </span>
+              
+              <span>Status: 
+                <span class="<%= 
+                  case bug.status
+                  when 'open' then 'text-red-600 font-medium'
+                  when 'in_progress' then 'text-yellow-600 font-medium'
+                  when 'resolved' then 'text-green-600 font-medium'
+                  else 'text-gray-700'
+                  end %>">
+                  <%= bug.status.humanize %>
+                </span>
+              </span>
+              
+              <span>Assignee: 
+                <span class="text-gray-700">
+                  <%= bug.assignee&.email || "Unassigned" %>
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <% if bug.screenshots.attached? %>
+              <span class="text-gray-400" title="Has screenshots">
+                📷
+              </span>
+            <% end %>
+            <%= link_to "View", [@project, bug], class: "text-blue-600 hover:underline text-sm" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  
+  <% if @bugs.count > 5 %>
+    <div class="text-center mt-4">
+      <%= link_to "View all #{@bugs.count} bugs", project_bugs_path(@project),
+          class: "bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors inline-block" %>
+    </div>
+  <% end %>
+<% else %>
+  <div class="text-center py-12 bg-white rounded-2xl shadow border border-gray-100">
+    <p class="text-gray-700 mb-4">No bugs reported for this project yet.</p>
+    <%= link_to "Report First Bug", new_project_bug_path(@project),
+        class: "bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors inline-block" %>
+  </div>
+<% end %>

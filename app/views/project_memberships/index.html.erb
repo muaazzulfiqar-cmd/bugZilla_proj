@@ -1,0 +1,102 @@
+<div class="max-w-6xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-black">Manage Team Members</h1>
+    <p class="text-gray-600 mt-1">
+      Project: <%= link_to @project.name, @project, class: "text-blue-600 hover:underline" %>
+    </p>
+  </div>
+
+  <!-- Add New Member Form -->
+  <div class="bg-white p-6 rounded-2xl shadow mb-8">
+    <h2 class="text-xl font-semibold mb-4 text-black">Add New Member</h2>
+    
+    <%= form_with model: [@project, ProjectMembership.new], local: true, class: "space-y-4" do |f| %>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="md:col-span-2">
+          <%= f.label :user_id, "Select User", class: "block font-medium mb-1 text-black" %>
+          <%= f.collection_select :user_id, 
+              User.all - @project.users,
+              :id, 
+              :email,
+              { include_blank: "Choose a user..." },
+              class: "w-full border rounded-lg p-2 text-black bg-white" %>
+          <p class="text-xs text-gray-500 mt-1">Only users not already in the project are shown</p>
+        </div>
+        
+        <div>
+          <%= f.label :role, class: "block font-medium mb-1 text-black" %>
+          <%= f.select :role, 
+              ProjectMembership.roles.keys.map { |r| [r.humanize, r] },
+              { prompt: "Select role..." },
+              class: "w-full border rounded-lg p-2 text-black bg-white" %>
+        </div>
+      </div>f
+      
+      <%= f.submit "Add to Project", 
+          class: "bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors" %>
+    <% end %>
+  </div>
+
+  <!-- Current Members List -->
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-black">Current Members (<%= @memberships.count %>)</h2>
+      <span class="text-sm text-gray-500">Total: <%= @project.users.count %> members</span>
+    </div>
+    
+    <div class="space-y-3">
+      <% @memberships.each do |membership| %>
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+              <%= membership.user.email[0].upcase %>
+            </div>
+            <div>
+              <p class="font-medium text-black"><%= membership.user.email %></p>
+              <div class="flex items-center gap-2 mt-1">
+                <% if membership.user == @project.creator %>
+                  <span class="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">Creator</span>
+                <% end %>
+                
+                <!-- Role update form -->
+                <%= form_with model: [@project, membership], local: true, class: "inline-flex items-center gap-2" do |f| %>
+                  <%= f.select :role, 
+                      ProjectMembership.roles.keys.map { |r| [r.humanize, r] },
+                      {},
+                      class: "text-sm border rounded-lg p-1 text-black bg-white",
+                      onchange: "this.form.submit()" %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 text-sm rounded-full 
+              <%= case membership.role
+                  when 'manager' then 'bg-green-100 text-green-800'
+                  when 'developer' then 'bg-blue-100 text-blue-800'
+                  when 'qa' then 'bg-orange-100 text-orange-800'
+                  end %>">
+              <%= membership.role.humanize %>
+            </span>
+            
+            <% if membership.user != current_user && membership.user != @project.creator %>
+              <%= button_to [@project, membership], 
+                  method: :delete,
+                  class: "text-red-600 hover:text-red-800 p-1" do %>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Back to Project Link -->
+  <div class="mt-6">
+    <%= link_to "← Back to Project", @project, class: "text-blue-600 hover:underline" %>
+  </div>
+</div>

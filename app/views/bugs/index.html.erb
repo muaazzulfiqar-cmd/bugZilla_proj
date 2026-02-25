@@ -1,0 +1,76 @@
+<div class="mb-6">
+  <h1 class="text-3xl font-bold text-black">Bugs for <%= @project.name %></h1>
+  <p class="text-gray-600 mt-1"><%= link_to "Back to Project", @project, class: "text-blue-600 hover:underline" %></p>
+</div>
+
+<div class="flex justify-end mb-4">
+  <%= link_to "Report New Bug", new_project_bug_path(@project),
+      class: "bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors" %>
+</div>
+
+<% if @bugs.any? %>
+  <div class="bg-white rounded-2xl shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assignee</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reporter</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <% @bugs.each do |bug| %>
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4">
+              <%= link_to bug.title, [@project, bug], class: "text-blue-600 hover:underline font-medium" %>
+            </td>
+            <td class="px-6 py-4">
+              <span class="px-2 py-1 text-xs rounded-full
+                <%= case bug.status
+                    when 'open' then 'bg-red-100 text-red-800'
+                    when 'in_progress' then 'bg-yellow-100 text-yellow-800'
+                    when 'resolved' then 'bg-green-100 text-green-800'
+                    else 'bg-gray-100 text-gray-800'
+                    end %>">
+                <%= bug.status.humanize %>
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <span class="px-2 py-1 text-xs rounded-full
+                <%= case bug.priority
+                    when 'high' then 'bg-red-100 text-red-800'
+                    when 'medium' then 'bg-yellow-100 text-yellow-800'
+                    when 'low' then 'bg-green-100 text-green-800'
+                    else 'bg-gray-100 text-gray-800'
+                    end %>">
+                <%= bug.priority.humanize %>
+              </span>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-700">
+              <%= bug.assignee&.email || "Unassigned" %>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-700">
+              <%= bug.reporter.email %>
+            </td>
+            <td class="px-6 py-4 text-sm">
+              <%= link_to "View", [@project, bug], class: "text-blue-600 hover:underline mr-3" %>
+              <%= link_to "Edit", edit_project_bug_path(@project, bug), class: "text-yellow-600 hover:underline" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <div class="mt-8 flex justify-center">
+    <%= paginate @bugs %>
+  </div>
+<% else %>
+  <div class="text-center py-12 bg-white rounded-2xl shadow border border-gray-100">
+    <p class="text-gray-700 mb-4">No bugs reported for this project yet.</p>
+    <%= link_to "Report First Bug", new_project_bug_path(@project),
+        class: "bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors inline-block" %>
+  </div>
+<% end %>

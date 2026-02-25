@@ -1,0 +1,151 @@
+<h1 class="text-3xl font-bold mb-6 text-white">Dashboard</h1>
+
+<!-- Global Role Banner -->
+<div class="bg-gradient-to-r <%= @global_role == 'admin' ? 'from-purple-600 to-pink-600' : 'from-blue-600 to-green-600' %> text-white p-6 rounded-2xl shadow-lg mb-8">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div class="flex items-center gap-4">
+      <div class="bg-white/20 p-3 rounded-full">
+        <% if @global_role == 'admin' %>
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        <% else %>
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+        <% end %>
+      </div>
+      <div>
+        <p class="text-sm opacity-90">Logged in as</p>
+        <p class="text-xl font-bold"><%= current_user.email %></p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-4 bg-white/10 px-6 py-3 rounded-xl">
+      <div class="text-right">
+        <p class="text-sm opacity-90">Account Type</p>
+        <p class="text-3xl font-bold uppercase"><%= @global_role %></p>
+      </div>
+      <div class="border-l border-white/30 pl-4">
+        <% if @global_role == 'admin' %>
+          <p class="text-sm font-semibold">System Administrator</p>
+          <p class="text-xs opacity-90">Full access to all projects</p>
+        <% else %>
+          <p class="text-sm font-semibold">Team Member</p>
+          <p class="text-xs opacity-90">Access to assigned projects only</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+  <!-- Projects Card -->
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <h2 class="text-xl font-semibold mb-4 text-black">Your Projects</h2>
+
+    <% if @projects.any? %>
+      <ul class="space-y-4">
+        <% @memberships.each do |membership| %>
+          <li class="flex items-center justify-between border-b border-gray-200 pb-2">
+            <div>
+              <%= link_to membership.project.name, project_path(membership.project),
+                class: "text-blue-600 hover:underline font-medium" %>
+            </div>
+            <div>
+              <% case membership.role %>
+              <% when "manager" %>
+                <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full border border-green-200">
+                  Manager
+                </span>
+              <% when "developer" %>
+                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-1 rounded-full border border-blue-200">
+                  Developer
+                </span>
+              <% when "qa" %>
+                <span class="bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-1 rounded-full border border-orange-200">
+                  QA
+                </span>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-gray-700">No projects yet.</p>
+    <% end %>
+
+    <%= link_to "Create Project", new_project_path,
+      class: "inline-block mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors" %>
+  </div>
+
+  <!-- Assigned Bugs -->
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <h2 class="text-xl font-semibold mb-4 flex items-center justify-between text-black">
+      <span>Assigned Bugs</span>
+      <% if @assigned_bugs.any? %>
+        <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-1 rounded-full">
+          <%= @assigned_bugs.count %>
+        </span>
+      <% end %>
+    </h2>
+
+    <% if @assigned_bugs.any? %>
+      <ul class="space-y-3">
+        <% @assigned_bugs.each do |bug| %>
+          <li class="border-l-4 border-red-400 pl-3 py-1">
+            <%= link_to bug.title,
+              [bug.project, bug],
+              class: "text-red-600 hover:underline font-medium" %>
+            <span class="text-xs text-gray-600 block">
+              in <%= bug.project.name %>
+            </span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-gray-700">No open assigned bugs 🎉</p>
+    <% end %>
+  </div>
+
+</div>
+
+<!-- Bug Statistics Row -->
+<div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div class="bg-white p-4 rounded-2xl shadow flex items-center justify-between">
+    <div>
+      <p class="text-sm text-gray-600">Your Projects</p>
+      <p class="text-2xl font-bold text-black"><%= @projects.count %></p>
+    </div>
+    <div class="bg-blue-100 p-3 rounded-full">
+      <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+      </svg>
+    </div>
+  </div>
+  
+  <div class="bg-white p-4 rounded-2xl shadow flex items-center justify-between">
+    <div>
+      <p class="text-sm text-gray-600">Assigned Bugs</p>
+      <p class="text-2xl font-bold text-black"><%= @assigned_bugs.count %></p>
+    </div>
+    <div class="bg-red-100 p-3 rounded-full">
+      <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+      </svg>
+    </div>
+  </div>
+  
+  <div class="bg-white p-4 rounded-2xl shadow flex items-center justify-between">
+    <div>
+      <p class="text-sm text-gray-600">Open / Resolved</p>
+      <p class="text-2xl font-bold text-black"><%= @open_count %> / <%= @resolved_count %></p>
+    </div>
+    <div class="bg-green-100 p-3 rounded-full">
+      <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+      </svg>
+    </div>
+  </div>
+</div>
