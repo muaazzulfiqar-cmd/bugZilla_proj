@@ -27,7 +27,7 @@ class ProjectsController < ApplicationController
         user: current_user,
         role: :manager
       )
-      
+
       redirect_to @project, notice: "Project created successfully."
     else
       render :new, status: :unprocessable_entity

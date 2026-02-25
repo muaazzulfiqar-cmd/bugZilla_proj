@@ -79,28 +79,28 @@ projects = []
     project_prefixes.sample,
     project_suffixes.sample
   ].join(' ')
-  
+
   # Add adjective sometimes (30% chance)
   if rand < 0.3
     name = "#{project_adjectives.sample} #{name}"
   end
-  
+
   # Add number sometimes (20% chance)
   if rand < 0.2
     name = "#{name} #{rand(1000..9999)}"
   end
-  
+
   # Randomly select a creator from admins (80% chance) or employees (20% chance)
   creator_pool = rand < 0.8 ? users.select { |u| u[:user].admin? } : users
   creator = creator_pool.sample[:user]
-  
+
   project = Project.create!(
     name: name,
-    description: "#{project_descriptions.sample} for #{['businesses', 'enterprises', 'startups', 'teams', 'organizations'].sample}.",
+    description: "#{project_descriptions.sample} for #{[ 'businesses', 'enterprises', 'startups', 'teams', 'organizations' ].sample}.",
     creator: creator
   )
   projects << project
-  
+
   # Add creator as manager (unless they're admin - admins don't need project role)
   unless creator.admin?
     ProjectMembership.create!(
@@ -109,27 +109,27 @@ projects = []
       role: :manager
     )
   end
-  
+
   # Add 5-15 random members to each project
   num_members = rand(5..15)
   available_users = users.reject { |u| u[:user] == creator }.sample(num_members)
-  
+
   available_users.each do |user_data|
     # Assign random project role (manager, developer, qa)
     # But ensure at least one manager per project (if creator is admin)
     role = if creator.admin? && !ProjectMembership.exists?(project: project, role: :manager)
       :manager
     else
-      [:manager, :developer, :qa].sample
+      [ :manager, :developer, :qa ].sample
     end
-    
+
     ProjectMembership.create!(
       user: user_data[:user],
       project: project,
       role: role
     )
   end
-  
+
   puts "  Created project #{i+1}/100: '#{name}'"
 end
 
@@ -217,28 +217,28 @@ bug_descriptions = [
   "Email template images not loading"
 ]
 
-statuses = [:open, :in_progress, :resolved, :closed]
-priorities = [:low, :medium, :high]
+statuses = [ :open, :in_progress, :resolved, :closed ]
+priorities = [ :low, :medium, :high ]
 
 projects.each_with_index do |project, p_index|
   # Get all project members for this project
   members = project.users.to_a
   next if members.empty?
-  
+
   20.times do |b_index|
     # Find reporters (any member can report)
     reporter = members.sample
-    
+
     # Find assignees (usually developers, sometimes others)
-    assignee_pool = members.select { |u| 
+    assignee_pool = members.select { |u|
       membership = ProjectMembership.find_by(user: u, project: project)
       membership&.developer? || membership&.manager?
     }
     assignee_pool = members if assignee_pool.empty?
-    
+
     # Determine assignee (70% chance assigned, 30% unassigned)
     assignee = rand < 0.7 ? assignee_pool.sample : nil
-    
+
     # Determine status based on realistic distribution
     status = case rand(10)
     when 0..4 then :open           # 50% open
@@ -246,21 +246,21 @@ projects.each_with_index do |project, p_index|
     when 8..9 then :resolved       # 20% resolved
     else :closed
     end
-    
+
     # Determine priority based on realistic distribution
     priority = case rand(10)
     when 0..5 then :medium  # 60% medium
     when 6..8 then :high    # 30% high
     else :low               # 10% low
     end
-    
+
     # Randomly select title and description
     title = bug_titles.sample
     # Add some variety by sometimes prefixing with project context
     if rand < 0.3
       title = "[#{project.name.split.first}] #{title}"
     end
-    
+
     bug = Bug.create!(
       title: title,
       description: bug_descriptions.sample,
@@ -270,7 +270,7 @@ projects.each_with_index do |project, p_index|
       assignee: assignee,
       project: project
     )
-    
+
     # Randomly add screenshots to some bugs (20% chance)
     if rand < 0.2
       # This is a placeholder - in real seeds you might attach actual files
@@ -278,7 +278,7 @@ projects.each_with_index do |project, p_index|
       puts "    📸 Bug #{b_index+1} has screenshots (simulated)"
     end
   end
-  
+
   puts "  ✅ Added 20 bugs to '#{project.name}' (Project #{p_index+1}/100)"
 end
 

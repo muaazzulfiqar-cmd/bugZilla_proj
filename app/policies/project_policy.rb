@@ -21,16 +21,16 @@ class ProjectPolicy < ApplicationPolicy
 
   def update?
     return true if user.admin?
-    
+
     user.present? && (
-      record.creator_id == user.id || 
+      record.creator_id == user.id ||
       user.project_memberships.find_by(project: record)&.manager?
     )
   end
 
   def destroy?
     return true if user.admin?
-    
+
     user.present? && record.creator_id == user.id
   end
 

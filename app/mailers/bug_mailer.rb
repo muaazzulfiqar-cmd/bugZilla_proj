@@ -1,5 +1,5 @@
 class BugMailer < ApplicationMailer
-  default from: 'bugs@bugzilla.com'
+  default from: "bugs@bugzilla.com"
 
   def bug_assigned(bug, assignee)
     @bug = bug
@@ -7,7 +7,7 @@ class BugMailer < ApplicationMailer
     @reporter = bug.reporter
     @project = bug.project
     @assigned_by = @reporter
-    
+
     mail(to: @assignee.email, subject: "Bug ##{bug.id} has been assigned to you in #{@project.name}")
   end
 
@@ -15,7 +15,7 @@ class BugMailer < ApplicationMailer
     @bug = bug
     @previous_assignee = previous_assignee
     @project = bug.project
-    
+
     mail(to: @previous_assignee.email, subject: "Bug ##{bug.id} has been unassigned from you")
   end
 
@@ -24,9 +24,9 @@ class BugMailer < ApplicationMailer
     @old_status = old_status
     @new_status = new_status
     @project = bug.project
-    
-    recipients = [bug.assignee&.email, bug.reporter.email].compact.uniq
-    
+
+    recipients = [ bug.assignee&.email, bug.reporter.email ].compact.uniq
+
     mail(to: recipients, subject: "Bug ##{bug.id} status changed to #{new_status.humanize}")
   end
 
@@ -35,7 +35,7 @@ class BugMailer < ApplicationMailer
     @previous_assignee = previous_assignee
     @project = bug.project
     @deleted_by = @bug.reporter
-    
+
     mail(to: @previous_assignee.email, subject: "Bug ##{bug.id} has been deleted from #{@project.name}")
   end
 end

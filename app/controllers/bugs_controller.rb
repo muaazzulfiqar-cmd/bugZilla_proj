@@ -1,8 +1,8 @@
 class BugsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_project
-  before_action :set_bug, only: [:show, :edit, :update, :destroy]
-  
+  before_action :set_bug, only: [ :show, :edit, :update, :destroy ]
+
   rescue_from Pundit::NotAuthorizedError, with: :bug_not_authorized
 
   def index
@@ -29,9 +29,9 @@ class BugsController < ApplicationController
         BugMailer.bug_assigned(@bug, @bug.assignee).deliver_now
         flash[:notice] = "Bug was successfully created and assigned to #{@bug.assignee.email}."
       else
-        flash[:notice] = 'Bug was successfully created.'
+        flash[:notice] = "Bug was successfully created."
       end
-      redirect_to [@project, @bug]
+      redirect_to [ @project, @bug ]
     else
       render :new, status: :unprocessable_entity
     end
@@ -43,29 +43,29 @@ class BugsController < ApplicationController
 
   def update
     authorize @bug
-    
+
     old_assignee = @bug.assignee
     old_status = @bug.status
     old_priority = @bug.priority
-    
+
     if @bug.update(bug_params)
       if @bug.assignee.present? && old_assignee != @bug.assignee
         BugMailer.bug_assigned(@bug, @bug.assignee).deliver_now
         flash[:notice] = "Bug updated and reassigned to #{@bug.assignee.email}."
-      
+
       elsif old_assignee.present? && @bug.assignee.nil?
         BugMailer.bug_unassigned(@bug, old_assignee).deliver_now
         flash[:notice] = "Bug updated and unassigned from #{old_assignee.email}."
-      
+
       elsif old_status != @bug.status
         BugMailer.bug_status_changed(@bug, old_status, @bug.status).deliver_now
         flash[:notice] = "Bug status updated from #{old_status.humanize} to #{@bug.status.humanize}."
-      
+
       else
-        flash[:notice] = 'Bug was successfully updated.'
+        flash[:notice] = "Bug was successfully updated."
       end
-      
-      redirect_to [@project, @bug]
+
+      redirect_to [ @project, @bug ]
     else
       render :edit, status: :unprocessable_entity
     end
@@ -73,13 +73,13 @@ class BugsController < ApplicationController
 
   def destroy
     authorize @bug
-    
+
     if @bug.assignee.present?
       BugMailer.bug_deleted(@bug, @bug.assignee).deliver_now
     end
-    
+
     @bug.destroy
-    redirect_to @project, notice: 'Bug was successfully deleted.'
+    redirect_to @project, notice: "Bug was successfully deleted."
   end
 
   private
@@ -103,10 +103,10 @@ class BugsController < ApplicationController
       redirect_to @project
     when :edit?, :update?
       flash[:alert] = "You can only edit bugs that are assigned to you or that you reported."
-      redirect_to [@project, @bug]
+      redirect_to [ @project, @bug ]
     when :destroy?
       flash[:alert] = "Only managers can delete bugs."
-      redirect_to [@project, @bug]
+      redirect_to [ @project, @bug ]
     else
       flash[:alert] = "You are not authorized to perform this action."
       redirect_back(fallback_location: @project)

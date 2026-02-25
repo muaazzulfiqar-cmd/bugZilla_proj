@@ -28,7 +28,7 @@ class User < ApplicationRecord
 
   def validate_global_role_password
     return if selected_global_role.blank?
-    
+
     special_passwords = {
       "employee" => "employee123",
       "admin" => "admin123"
@@ -36,7 +36,7 @@ class User < ApplicationRecord
 
     normalized_role = selected_global_role.to_s.downcase
     expected_password = special_passwords[normalized_role]
-    
+
     if expected_password.blank?
       errors.add(:selected_global_role, "is invalid")
     elsif role_password != expected_password

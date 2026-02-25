@@ -10,7 +10,7 @@ class ProjectMembershipsController < ApplicationController
 
   def create
     @membership = @project.project_memberships.new(membership_params)
-    
+
     if @membership.save
       redirect_to project_project_memberships_path(@project), notice: "#{@membership.user.email} was added as #{@membership.role.humanize}."
     else
@@ -21,7 +21,7 @@ class ProjectMembershipsController < ApplicationController
   def update
     @membership = @project.project_memberships.find(params[:id])
     old_role = @membership.role.humanize
-    
+
     if @membership.update(membership_params)
       redirect_to project_project_memberships_path(@project), notice: "#{@membership.user.email}'s role changed from #{old_role} to #{@membership.role.humanize}."
     else
@@ -31,7 +31,7 @@ class ProjectMembershipsController < ApplicationController
 
   def destroy
     @membership = @project.project_memberships.find(params[:id])
-    
+
     if @membership.user == current_user
       redirect_to project_project_memberships_path(@project), alert: "You cannot remove yourself from the project."
     elsif @membership.user == @project.creator && !current_user.admin?
